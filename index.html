@@ -622,24 +622,24 @@ document.addEventListener('keydown',e=>{
 });
 
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
 const SUPABASE_URL = "https://eyamkujheyioxpkerprg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_pu7jHn0qWBHFdED_2IkZMw_sI1bwOkq";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // LOAD DATA
-async function load(){
-  const { data } = await supabaseClient
+async function save(){
+  const { error } = await supabaseClient
     .from('app_data')
-    .select('*')
-    .limit(1)
-    .single();
+    .update({ data: S })
+    .eq('id', '458ee4ce-e3a5-42c6-8cab-8a5547ab54ca');
 
-  if(data && data.data){
-    S = data.data;
+  console.log("SAVE RESULT:", error);
+
+  if(error){
+    alert("SAVE ERROR — check console");
   }
 }
 
