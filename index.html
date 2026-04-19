@@ -340,8 +340,6 @@ let S={counters:[],log:[]};
 let editId=null,sEmoji='🎯',sIncs=[1,5],sDir='good',afilt='all';
 let tChart=null,dChart=null;
 
-function load(){try{const s=localStorage.getItem('aaru-v4');if(s)S=JSON.parse(s)}catch(e){}}
-function save(){try{localStorage.setItem('aaru-v4',JSON.stringify(S))}catch(e){}}
 function td(){return new Date().toISOString().slice(0,10)}
 function d7(){const o=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);o.push(d.toISOString().slice(0,10))}return o}
 function fmt(n){if(n===undefined||n===null)return'0';const r=parseFloat(n.toFixed(8));return Number.isInteger(r)?r.toString():r.toString()}
@@ -623,7 +621,41 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-load();renderCounters();
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+const SUPABASE_URL = "https://eyamkujheyioxpkerprg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_pu7jHn0qWBHFdED_2IkZMw_sI1bwOkq";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// LOAD DATA
+async function load(){
+  const { data } = await supabaseClient
+    .from('app_data')
+    .select('*')
+    .limit(1)
+    .single();
+
+  if(data && data.data){
+    S = data.data;
+  }
+}
+
+// SAVE DATA
+async function save(){
+  await supabaseClient
+    .from('app_data')
+    .update({ data: S })
+    .eq('id', '458ee4ce-e3a5-42c6-8cab-8a5547ab54ca');
+}
+
+// START APP
+(async () => {
+  await load();
+  renderCounters();
+})();
 </script>
 </body>
 </html>
