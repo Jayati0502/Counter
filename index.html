@@ -260,6 +260,7 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
 
 <button class="fab" onclick="openAdd()">+</button>
 
+<!-- MODAL -->
 <div class="mbd" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="mtitle" id="mtitle">New counter</div>
@@ -296,6 +297,7 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
 <div class="toast" id="toast"></div>
 
 <script>
+// BG PARTICLES
 const bc=document.getElementById('bgc');
 const bx=bc.getContext('2d');
 let pts=[];
@@ -325,6 +327,7 @@ for(let i=0;i<60;i++) pts.push({
   requestAnimationFrame(drawBg);
 })();
 
+// STATE
 const EMOJIS=['🎯','💧','🏃','📚','💊','☕','🍎','💪','🧘','✍️','🎵','🌙','⚡','🔥','🌟','🎨','🧠','❤️','🌿','🍵','🥗','🛌','🚴','🏊','🎮','🍫','🔔','📊','🚬','🥤','🍺','💉','🧪','🦷','😴','🌊','🏆','🎁','🦾','🚀','🌸','💎','🧩','🎲','⏰','🔑','🌈','🍀','🐾','🌺'];
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const GCS=[
@@ -341,6 +344,7 @@ function td(){return new Date().toISOString().slice(0,10)}
 function d7(){const o=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);o.push(d.toISOString().slice(0,10))}return o}
 function fmt(n){if(n===undefined||n===null)return'0';const r=parseFloat(n.toFixed(8));return Number.isInteger(r)?r.toString():r.toString()}
 
+// TABS
 function switchTab(v,btn){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(x=>x.classList.remove('active'));
@@ -349,6 +353,7 @@ function switchTab(v,btn){
   if(v==='analytics') renderAnalytics();
 }
 
+// RIPPLE
 function ripple(btn,e){
   const r=document.createElement('span');
   r.className='rpl';
@@ -358,6 +363,7 @@ function ripple(btn,e){
   btn.appendChild(r);r.addEventListener('animationend',()=>r.remove());
 }
 
+// FLOAT PARTICLE
 function floatP(e,txt,bad){
   const p=document.createElement('div');
   p.className='fp'+(bad?' bad':'');p.textContent=txt;
@@ -366,6 +372,7 @@ function floatP(e,txt,bad){
   p.addEventListener('animationend',()=>p.remove());
 }
 
+// STATUS
 function getStatus(c){
   const v=c.value,d=c.dir||'good';
   if(v===0)return{cls:'neutral',lbl:'Starting'};
@@ -384,6 +391,7 @@ function getStatus(c){
   }
 }
 
+// RENDER COUNTERS
 function renderCounters(){
   const g=document.getElementById('cgrid');g.innerHTML='';
   if(!S.counters.length){
@@ -418,23 +426,25 @@ function renderCounters(){
   });
 }
 
+// INCREMENT
 function doInc(e,id,amount){
   ripple(e.currentTarget,e);
   const c=S.counters.find(x=>x.id===id);if(!c)return;
   c.value=parseFloat((c.value+amount).toFixed(8));
   const t=td();if(!c.daily)c.daily={};
   c.daily[t]=parseFloat(((c.daily[t]||0)+amount).toFixed(8));
+  if(!Array.isArray(S.log))S.log=[];
   S.log.unshift({id,name:c.name,emoji:c.emoji,delta:amount,ts:Date.now()});
   if(S.log.length>300)S.log=S.log.slice(0,300);
+  save();
   const el=document.getElementById('v'+id);
   if(el){el.textContent=fmt(c.value);el.classList.remove('gbump','bbump');void el.offsetWidth;el.classList.add(c.dir==='bad'?'bbump':'gbump')}
   floatP(e,'+'+fmt(amount),c.dir==='bad');
   renderCounters();
-  save();
   showToast(`${c.emoji} ${c.dir==='bad'?'⚠️':'✓'} +${fmt(amount)}`);
 }
 
-async function doUndo(e,id){
+function doUndo(e,id){
   ripple(e.currentTarget,e);
   const c=S.counters.find(x=>x.id===id);if(!c||c.value<=0)return;
   const last=S.log.find(l=>l.id===id&&l.delta>0);
@@ -442,22 +452,22 @@ async function doUndo(e,id){
   c.value=parseFloat(Math.max(0,c.value-amt).toFixed(8));
   const t=td();if(!c.daily)c.daily={};
   c.daily[t]=parseFloat(Math.max(0,(c.daily[t]||0)-amt).toFixed(8));
+  if(!Array.isArray(S.log))S.log=[];
   if(last)S.log=S.log.filter(l=>l!==last);
   S.log.unshift({id,name:c.name,emoji:c.emoji,delta:-amt,ts:Date.now()});
-  renderCounters();
-  await saveNow();
-  showToast('↩ Undone');
+  renderCounters();saveNow();showToast('↩ Undone');
 }
 
-async function delC(id){
+function delC(id){
   if(!confirm('Delete this counter?'))return;
+  if(!Array.isArray(S.counters))S.counters=[];
+  if(!Array.isArray(S.log))S.log=[];
   S.counters=S.counters.filter(c=>c.id!==id);
   S.log=S.log.filter(l=>l.id!==id);
-  renderCounters();
-  await saveNow();
-  showToast('Deleted');
+  renderCounters();saveNow();showToast('Deleted');
 }
 
+// MODAL
 function openAdd(){
   editId=null;sEmoji='🎯';sIncs=[1,5];sDir='good';
   document.getElementById('iname').value='';
@@ -510,12 +520,10 @@ async function saveCounter(){
   } else {
     S.counters.push({id:'c'+Date.now(),name,emoji:sEmoji,value:0,increments:sIncs,dir:sDir,daily:{},createdAt:Date.now()});
   }
-  closeModal();
-  renderCounters();
-  await saveNow();
-  showToast(editId?'Updated ✓':'Created ✨');
+  closeModal();renderCounters();await saveNow();showToast(editId?'Updated ✓':'Created ✨');
 }
 
+// ANALYTICS
 function renderAnalytics(){
   const wk=d7();
   const allT=S.counters.reduce((s,c)=>s+c.value,0);
@@ -626,51 +634,36 @@ async function load() {
     const res = await fetch(FB_URL);
     if (!res.ok) return;
     const data = await res.json();
-    if (data && data.counters) S = data;
-  } catch(e) {
-    console.error("LOAD ERROR", e);
-  }
+    if (data) {
+      S.counters = Array.isArray(data.counters) ? data.counters : [];
+      S.log = Array.isArray(data.log) ? data.log : [];
+    }
+  } catch(e) { console.error("LOAD ERROR", e); }
 }
 
 let _st = null;
-
 function save() {
+  if (!Array.isArray(S.counters)) S.counters = [];
+  if (!Array.isArray(S.log)) S.log = [];
   clearTimeout(_st);
   _st = setTimeout(async () => {
     try {
-      const res = await fetch(FB_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(S)
-      });
-      if (!res.ok) showToast('⚠️ Save failed');
-    } catch(e) {
-      showToast('⚠️ Save failed');
-    } finally {
-      _st = null;
-    }
-  }, 800);
+      await fetch(FB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(S) });
+    } catch(e) { showToast('⚠️ Save failed'); } finally { _st = null; }
+  }, 500);
 }
 
 async function saveNow() {
-  clearTimeout(_st);
-  _st = null;
+  if (!Array.isArray(S.counters)) S.counters = [];
+  if (!Array.isArray(S.log)) S.log = [];
+  clearTimeout(_st); _st = null;
   try {
-    const res = await fetch(FB_URL, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(S)
-    });
+    const res = await fetch(FB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(S) });
     if (!res.ok) showToast('⚠️ Save failed: ' + res.status);
-  } catch(e) {
-    showToast('⚠️ Save failed');
-  }
+  } catch(e) { showToast('⚠️ Save failed'); }
 }
 
-(async () => {
-  await load();
-  renderCounters();
-})();
+(async () => { await load(); renderCounters(); })();
 
 setInterval(async () => {
   if (document.getElementById('modal').classList.contains('open')) return;
@@ -678,11 +671,8 @@ setInterval(async () => {
   const prev = JSON.stringify(S);
   await load();
   if (JSON.stringify(S) !== prev) {
-    if (document.getElementById('view-analytics').classList.contains('active')) {
-      renderAnalytics();
-    } else {
-      renderCounters();
-    }
+    document.getElementById('view-analytics').classList.contains('active')
+      ? renderAnalytics() : renderCounters();
   }
 }, 3000);
 </script>
