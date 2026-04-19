@@ -620,17 +620,18 @@ document.addEventListener('keydown',e=>{
     if(document.activeElement.id==='iinc')addInc();else saveCounter();
   }
 });
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 const SUPABASE_URL = "https://eyamkujheyioxpkerprg.supabase.co";
-const SUPABASE_KEY = "sb_publishable_pu7jHn0qWBHFdED_2IkZMw_sI1bwOkq";
+const SUPABASE_KEY = "YOUR_PUBLISHABLE_ANON_KEY";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let S = { counters: [], log: [] };
+
 // LOAD DATA
-async function load(){
+async function load() {
   const { data, error } = await supabaseClient
     .from('app_data')
     .select('*')
@@ -639,30 +640,18 @@ async function load(){
 
   console.log("LOAD:", data, error);
 
-  if(error){
-    alert("LOAD ERROR");
+  if (error) {
+    alert("LOAD ERROR: " + error.message);
     return;
   }
 
-  if(data && data.data){
-    S = data.data;
-  }
-}
-
-  console.log("LOAD:", data, error);
-
-  if(error){
-    alert("LOAD ERROR");
-    return;
-  }
-
-  if(data && data.data){
+  if (data && data.data) {
     S = data.data;
   }
 }
 
 // SAVE DATA
-async function save(){
+async function save() {
   const { error } = await supabaseClient
     .from('app_data')
     .upsert({
@@ -672,8 +661,8 @@ async function save(){
 
   console.log("SAVE:", error);
 
-  if(error){
-    alert("SAVE ERROR");
+  if (error) {
+    alert("SAVE ERROR: " + error.message);
   }
 }
 
@@ -683,5 +672,6 @@ async function save(){
   renderCounters();
 })();
 </script>
+
 </body>
 </html>
