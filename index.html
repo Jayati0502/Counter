@@ -634,7 +634,20 @@ async function load(){
   const { data, error } = await supabaseClient
     .from('app_data')
     .select('*')
-    .single();
+    .eq('id', '458ee4ce-e3a5-42c6-8cab-8a5547ab54ca')
+    .maybeSingle();
+
+  console.log("LOAD:", data, error);
+
+  if(error){
+    alert("LOAD ERROR");
+    return;
+  }
+
+  if(data && data.data){
+    S = data.data;
+  }
+}
 
   console.log("LOAD:", data, error);
 
@@ -652,8 +665,10 @@ async function load(){
 async function save(){
   const { error } = await supabaseClient
     .from('app_data')
-    .update({ data: S })
-    .eq('id', '458ee4ce-e3a5-42c6-8cab-8a5547ab54ca');
+    .upsert({
+      id: '458ee4ce-e3a5-42c6-8cab-8a5547ab54ca',
+      data: S
+    });
 
   console.log("SAVE:", error);
 
